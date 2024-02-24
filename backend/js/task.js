@@ -3,21 +3,68 @@
  * Task 1
  */
 function leafFiles(files) {
-    return [];
+    const idNameMap = new Map()
+    files.forEach(file => (idNameMap.set(file.id, file.name)))
+    files.forEach(file => {if (idNameMap.has(file.parent)) idNameMap.delete(file.parent)})
+    return Array.from(idNameMap.values())
 }
 
 /**
- * Task 1
+ * Task 2
  */
 function kLargestCategories(files, k) {
-    return [];
+    if (k < 0 || !Number.isInteger(k)) throw new Error("Value for k must be a positive integer")
+    const categoriesSizeMap = new Map()
+    const categoriesArray = [];
+    for (let file of files) {
+        for (category of file.categories) {
+            if (categoriesSizeMap.has(category)) {
+                categoriesSizeMap.set(category, categoriesSizeMap.get(category) + 1)
+            } else {
+                categoriesArray.push(category)
+                categoriesSizeMap.set(category, 1)
+            }
+        }
+    }
+    mapArr = Array.from(categoriesSizeMap).sort(function(a,b) {
+        if (a[0] === b[0] && a[1] === b[1]) return 0
+        if (a[1] === b[1]) return ((a[0].toLowerCase() < b[0].toLowerCase()) ? -1 : 1)
+        return ((a[1] > b[1]) ? -1 : 1)
+    })
+    if (k > mapArr.length) k = mapArr.length - 1
+    return mapArr.map(element => element[0]).slice(0, k)
 }
 
 /**
- * Task 1
+ * Task 3
  */
 function largestFileSize(files) {
-    return 0;
+    let largestFileSize = 0
+
+    const idSizeMap = new Map()
+    files.forEach(file => {idSizeMap.set(file.id, file.size)})
+
+    const idChildMap = new Map()
+    for (let file of files) {
+        if (!idChildMap.has(file.parent)) idChildMap.set(file.parent, [])
+        idChildMap.get(file.parent).push(file.id)
+    }
+
+    // assuming files with a parent of -1 are roots
+    const roots = idChildMap.get(-1)
+    for (let file of roots) {
+        let queue = []
+        if (idChildMap.has(file)) queue = idChildMap.get(file)
+        let fileSize = idSizeMap.get(file)
+        while(queue.length != 0) {
+            let curr = queue.pop()
+            if (idChildMap.has(curr)) queue = queue.concat(idChildMap.get(curr))
+            fileSize += idSizeMap.get(curr)
+        }
+        if (fileSize > largestFileSize) largestFileSize = fileSize
+    }
+
+    return largestFileSize
 }
 
 
